@@ -41,14 +41,13 @@ def ack(msg, resp_type='AA'):
     resp.add_segment('MSA')
     resp.msa.msa_1 = resp_type
     resp.msa.msa_2 = msg.msh.msh_10
-    if resp_type == 'AE':
+    if resp_type != 'AA':
         pass
-    elif resp_type == 'AR':
-        pass
-    for c in resp.children:
-        print(c.to_er7())
-    print(type(resp.to_mllp()))
-    return to_mllp(resp.to_er7())
+    end_resp = to_mllp(
+        resp.to_er7()
+    )
+    assert isinstance(end_resp, bytes)
+    return end_resp
 
 
 class MLLPHandler(socketserver.BaseRequestHandler):
@@ -57,25 +56,16 @@ class MLLPHandler(socketserver.BaseRequestHandler):
 
     A MLLPHandler object is instantiated once per connection to the server.
     """
-    SB = '\x0B'
-    EB = '\x1C'
-
-    def message_type(self, msg):
-        pass
-
-    def save_to_db(self):
-        pass
-
     def handle(self):
         self.data = self.request.recv(102400)
         raw = self.data.decode().replace('\n', '\r')
         if all([raw[0] == '\x0b', raw[-2] == '\x1c', raw[-1] == '\r']):
             msg = parse_message(raw[1:-2])
-            print(msg.msh.msh_10.value)
+            run_info = msg.msh
+            print(run_info.to_er7())
             for spm in msg.oul_r22_specimen:
                 print(int(float(spm.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value[:8])))
                 print('----')
-            print('test ack-----')
             self.request.sendall(ack(msg))
         else:
             print('MSG RECV {}: Rejected, incorrect framing'.format(self.client_address))
