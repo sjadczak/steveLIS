@@ -4,6 +4,7 @@ from hl7apy.core import Message
 from hl7apy.parser import parse_message
 
 from config import Config
+from database import Database, CursorFromPool
 
 
 def to_mllp(msg):
@@ -21,9 +22,9 @@ def ack(msg, resp_type='AA'):
     """
     Build ACK response for incoming message.
 
-    :param msg: incoming message as hl7apy message
-    :param resp_type: 'AA' for ACK, 'AR' for Reject, 'AE' for NAK
-    :return: ACK ('AA','AR','AE') message
+    :param msg: incoming message as hl7apy Message
+    :param resp_type: 'AA' for ACK, 'AR' for Reject, 'AE' for Application Error
+    :return: ACK ('AA') or NAK ('AE', 'AR') message
     """
     resp_types = ('AA', 'AR', 'AE')
     if resp_type not in resp_types:
@@ -52,7 +53,8 @@ def ack(msg, resp_type='AA'):
 
 class MLLPHandler(socketserver.BaseRequestHandler):
     """
-    Class to handle MLLP-wrapped HL7 v2.5.1 requests from Roche c4800/c6800/c8800
+    Class to handle MLLP-wrapped HL7 v2.5.1 requests from Roche c4800 (currently)
+    Will expand to 6800/8800 next.
 
     A MLLPHandler object is instantiated once per connection to the server.
     """
@@ -61,8 +63,9 @@ class MLLPHandler(socketserver.BaseRequestHandler):
         raw = self.data.decode().replace('\n', '\r')
         if all([raw[0] == '\x0b', raw[-2] == '\x1c', raw[-1] == '\r']):
             msg = parse_message(raw[1:-2])
-            run_info = msg.msh
-            print(run_info.to_er7())
+            run_info = {
+                'temp': 'temp'
+            }
             for spm in msg.oul_r22_specimen:
                 print(int(float(spm.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value[:8])))
                 print('----')
@@ -73,5 +76,6 @@ class MLLPHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
+    Database.initialize(**Config.DATABASE)
     with socketserver.TCPServer(Config.SERVER_ADDR, MLLPHandler) as server:
         server.serve_forever()

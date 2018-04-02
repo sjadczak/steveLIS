@@ -3,5 +3,12 @@ class Config:
     PORT = 9999
     SERVER_ADDR = (ADDRESS, PORT)
 
-    LABNAME = 'ILB/VLEID'
+    LABNAME = 'ILB/VL-EID'
 
+    DATABASE = {
+        "dbname": "limslite",
+        "user": "limstest",
+        "password": "password",
+        "host": "localhost",
+        "port": "5432"
+    }

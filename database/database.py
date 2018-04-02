@@ -23,7 +23,7 @@ class Database:
         cls.__connection_pool.closeall()
 
 
-class CursorFromConnectionPool:
+class CursorFromPool:
     def __init__(self):
         self.connection = None
         self.cursor = None
