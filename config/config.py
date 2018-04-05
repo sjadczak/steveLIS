@@ -1,14 +1,11 @@
+import os
+
+
 class Config:
-    ADDRESS = '0.0.0.0'
-    PORT = 9999
+    ADDRESS = os.getenv('LIMS_ADDR')
+    PORT = int(os.getenv('LIMS_PORT'))
     SERVER_ADDR = (ADDRESS, PORT)
 
-    LABNAME = 'ILB/VL-EID'
+    LABNAME = os.getenv('LABNAME')
 
-    DATABASE = {
-        "dbname": "limslite",
-        "user": "limstest",
-        "password": "password",
-        "host": "localhost",
-        "port": "5432"
-    }
+    DATABASE = os.getenv('DB_URI')

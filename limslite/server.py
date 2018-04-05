@@ -1,59 +1,14 @@
 import socketserver
 
-from hl7apy.core import Message
-from hl7apy.parser import parse_message
-
 from config import Config
-from database import Database, CursorFromPool
-
-
-def to_mllp(msg):
-    """
-    Encodes input strings to UTF-8 byte strings, adds MLLP framing characters.
-    :param msg: ER7 formatted string input message
-    :return: MLLP-framed UTF-8 encoded byte string
-    """
-    sb = b'\x0B'
-    eb = b'\x1C'
-    return sb + msg.replace('\n', '\r').encode() + eb + b'\r'
-
-
-def ack(msg, resp_type='AA'):
-    """
-    Build ACK response for incoming message.
-
-    :param msg: incoming message as hl7apy Message
-    :param resp_type: 'AA' for ACK, 'AR' for Reject, 'AE' for Application Error
-    :return: ACK ('AA') or NAK ('AE', 'AR') message
-    """
-    resp_types = ('AA', 'AR', 'AE')
-    if resp_type not in resp_types:
-        raise ValueError("Invalid ACK type. Expected one of: {}".format(resp_types))
-    resp = Message('ACK', version='2.5.1')
-    resp.msh.msh_3 = 'LIS'
-    resp.msh.msh_4 = 'LIS Facility'
-    resp.msh.msh_5 = msg.msh.msh_3
-    resp.msh.msh_6 = Config.LABNAME
-    resp.msh.msh_9 = 'ACK^R22^ACK'
-    resp.msh.msh_10 = msg.msh.msh_10
-    resp.msh.msh_11 = 'P'
-    resp.msh.msh_18 = 'UNICODE UTF-8'
-    resp.msh.msh_21 = 'LAB-29^IHE'
-    resp.add_segment('MSA')
-    resp.msa.msa_1 = resp_type
-    resp.msa.msa_2 = msg.msh.msh_10
-    if resp_type != 'AA':
-        pass
-    end_resp = to_mllp(
-        resp.to_er7()
-    )
-    assert isinstance(end_resp, bytes)
-    return end_resp
+from database import Database
+from instrument_etl import C4800Message
 
 
 class MLLPHandler(socketserver.BaseRequestHandler):
     """
-    Class to handle MLLP-wrapped HL7 v2.5.1 requests from Roche c4800 (currently)
+    Class to handle MLLP-wrapped HL7 v2.5.1 requests from Roche c4800 (currently). Parses lab data from
+    correctly formatted received messages and stores in database.
     Will expand to 6800/8800 next.
 
     A MLLPHandler object is instantiated once per connection to the server.
@@ -61,21 +16,24 @@ class MLLPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(102400)
         raw = self.data.decode().replace('\n', '\r')
-        if all([raw[0] == '\x0b', raw[-2] == '\x1c', raw[-1] == '\r']):
-            msg = parse_message(raw[1:-2])
-            run_info = {
-                'temp': 'temp'
-            }
-            for spm in msg.oul_r22_specimen:
-                print(int(float(spm.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value[:8])))
-                print('----')
-            self.request.sendall(ack(msg))
+        if all([raw[0] == '\x0b', raw[-2:] == '\x1c\r']):
+            c4800msg = C4800Message(raw[1:-2])
+            print('MSG RECV {}: Accepted, processing...'.format(self.client_address))
+            instrument_id = c4800msg.save_instrument_info()
+            print('instrument id:', instrument_id)
+            assay_info = c4800msg.get_assay_info(instrument_id)
+            print('assay_id: ', assay_info)
+            run_info = c4800msg.save_run_info(instrument_id)
+            print('print run_info:', run_info)
+            results = [c4800msg.parse_result(spm, run_info, assay_info.id) for spm in c4800msg.msg.oul_r22_specimen]
+            c4800msg.save_results(results)
+            self.request.sendall(c4800msg.ack(c4800msg.msg, 'AA'))
         else:
             print('MSG RECV {}: Rejected, incorrect framing'.format(self.client_address))
             self.request.sendall(b'msg rejected\nincorrect framing\nclosing connection...\n')
 
 
 if __name__ == '__main__':
-    Database.initialize(**Config.DATABASE)
+    Database.initialize(dsn=Config.DATABASE)
     with socketserver.TCPServer(Config.SERVER_ADDR, MLLPHandler) as server:
         server.serve_forever()
