@@ -1,3 +1,5 @@
+import logging
+import json
 import re
 
 from collections import namedtuple
@@ -10,11 +12,15 @@ from config import Config
 from database import CursorFromPool
 from message_etl.utils import add_mllp_frame
 
+logger = logging.getLogger('mllpserver.c4800')
+
 
 class C4800:
     def __init__(self, raw_msg):
         self.msg = parse_message(raw_msg)
+        logger.debug('{}'.format(type(self.msg)))
         self.results = self.msg.oul_r22_specimen
+        logger.debug('{}'.format(type(self.results)))
         self.instrument_info = None
         self.run_info = None
 
@@ -52,6 +58,7 @@ class C4800:
         return end_resp
 
     def get_instrument_info(self):
+        logger.info('Getting message instrument info...')
         instrument_info = namedtuple('Instrument', 'id model sn sw_version')
         model = self.msg.oul_r22_specimen[0].oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[0].obx.obx_18.ei_1.value
         sn = self.msg.msh.msh_3.msh_3_2.value
@@ -66,8 +73,10 @@ class C4800:
             """, (model, sn, sw_version))
             result = cur.fetchone()
         self.instrument_info = instrument_info(*result)
+        logger.debug('Message instrument_info: {}'.format(self.instrument_info))
 
     def get_run_info(self):
+        logger.info('Getting message run info...')
         run_info = namedtuple('Run', 'id instrument_id msg_ts msg_guid')
         msg_ts = datetime.strptime(self.msg.msh.msh_7.value, '%Y%m%d%H%M%S%z')
         msg_guid = self.msg.msh.msh_10.value
@@ -85,6 +94,7 @@ class C4800:
         Parses assay from HL7 message and queries assays table for relevant information.
         :return: namedtuple of assay information (id, instrument_id, list_code, name)
         """
+        logger.debug('Getting sample assay info...')
         assay = namedtuple('Assay', 'id instrument_id lis_code name num_channels')
         lis_code = self.msg.oul_r22_specimen[0].oul_r22_order[0].obr.obr_4.obr_4_1.value
         with CursorFromPool() as cur:
@@ -94,7 +104,15 @@ class C4800:
             result = cur.fetchone()
         return assay(*result)
 
-    # TODO add Control Ct message parsing
+    @staticmethod
+    def parse_cntrl_ct(ct):
+        logger.debug('Parsing control ct values from message.')
+        result = {}
+        cts = ct.split(';')
+        for x in cts:
+            channel, ct = x.split(',')
+            result[channel] = float(ct)
+        return json.dumps(result)
 
     def _parse_result(self, elem):
         """
@@ -104,6 +122,7 @@ class C4800:
         insert into database.
         :return:`Result` namedtuple
         """
+        logger.debug('Parsing sample level results data from message...')
         results = namedtuple('Result', 'run_id assay_id sample_role sample_type sample_id result units result_status '
                                        'username flags cntrl_cts comments dwp_id mwp_id mwp_position start_ts end_ts')
         sample_role = elem.spm.spm_11.spm_11_1.value
@@ -112,7 +131,8 @@ class C4800:
         else:
             sample_type = elem.oul_r22_container[0].inv.inv_1.inv_1_1.value
         sample_id = elem.spm.spm_2.eip_1.ei_1.to_er7()
-        result = int(float(elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value[:8]))
+        # store raw string, handle parsing actual titer results in UI
+        result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
         units = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_6.obx_6_1.value
         result_status = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_11.value
         username = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_16.value
@@ -123,7 +143,7 @@ class C4800:
         else:
             flags = flags_raw
         if sample_role == 'Q':
-            cntrl_cts = '{"test": "todo"}'
+            cntrl_cts = C4800.parse_cntrl_ct(elem.oul_r22_order[1].nte[1].nte_3.value)
         else:
             cntrl_cts = None
         if sample_role == 'P':
@@ -144,15 +164,17 @@ class C4800:
                        end_ts)
 
     def _parse_results(self):
+        logger.debug('Returning results parser generator...')
         for result in self.results:
-            yield C4800._parse_result(result)
+            yield C4800._parse_result(self, result)
 
     def save_results(self):
         """
         Inserts results into database
         """
         with CursorFromPool() as cur:
-            for result in self._parse_results():
+            for i, result in enumerate(self._parse_results(), start = 1):
+                logger.info('Inserting run {} - sample {} into results table...'.format(result.run_id, i))
                 cur.execute("""
                     INSERT INTO results (run_id, assay_id, sample_role, sample_type, sample_id, result, units,
                       result_status, username, flags, cntrl_cts, comments, dwp_id, mwp_id, mwp_position, start_ts,

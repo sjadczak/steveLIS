@@ -6,7 +6,7 @@ HOST, PORT = 'localhost', 9999
 SB = b'\x0B'
 EB = b'\x1C\r'
 
-with open('../test/c4800.hl7', 'r') as f:
+with open('test/c4800.hl7', 'r') as f:
     data = f.read().replace('\n', '\r').encode()
 
 msg_out = SB + data + EB
