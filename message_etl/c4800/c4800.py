@@ -12,15 +12,18 @@ from config import Config
 from database import CursorFromPool
 from message_etl.utils import add_mllp_frame
 
-logger = logging.getLogger('mllpserver.c4800')
+logger = logging.getLogger('lis_server.mllpserver.c4800')
 
 
 class C4800:
+    """
+    Class handles
+    """
     def __init__(self, raw_msg):
         self.msg = parse_message(raw_msg)
         logger.debug('{}'.format(type(self.msg)))
-        self.results = self.msg.oul_r22_specimen
-        logger.debug('{}'.format(type(self.results)))
+        self.raw_results = self.msg.oul_r22_specimen
+        logger.debug('{}'.format(type(self.raw_results)))
         self.instrument_info = None
         self.run_info = None
 
@@ -75,7 +78,7 @@ class C4800:
         self.instrument_info = instrument_info(*result)
         logger.debug('Message instrument_info: {}'.format(self.instrument_info))
 
-    def get_run_info(self):
+    def save_run_info(self):
         logger.info('Getting message run info...')
         run_info = namedtuple('Run', 'id instrument_id msg_ts msg_guid')
         msg_ts = datetime.strptime(self.msg.msh.msh_7.value, '%Y%m%d%H%M%S%z')
@@ -106,6 +109,12 @@ class C4800:
 
     @staticmethod
     def parse_cntrl_ct(ct):
+        """
+        Parses all channels/ids and numerical results for each channel.
+        :param ct: raw ct information from HL7 message
+        :rtype: JSON
+        :return: channel name/id with numerical ct result in JSON
+        """
         logger.debug('Parsing control ct values from message.')
         result = {}
         cts = ct.split(';')
@@ -143,7 +152,8 @@ class C4800:
         else:
             flags = flags_raw
         if sample_role == 'Q':
-            cntrl_cts = C4800.parse_cntrl_ct(elem.oul_r22_order[1].nte[1].nte_3.value)
+            cts_raw = elem.oul_r22_order[1].nte[1].nte_3.value
+            cntrl_cts = C4800.parse_cntrl_ct(cts_raw)
         else:
             cntrl_cts = None
         if sample_role == 'P':
@@ -165,7 +175,7 @@ class C4800:
 
     def _parse_results(self):
         logger.debug('Returning results parser generator...')
-        for result in self.results:
+        for result in self.raw_results:
             yield C4800._parse_result(self, result)
 
     def save_results(self):
@@ -173,7 +183,7 @@ class C4800:
         Inserts results into database
         """
         with CursorFromPool() as cur:
-            for i, result in enumerate(self._parse_results(), start = 1):
+            for i, result in enumerate(self._parse_results(), start=1):
                 logger.info('Inserting run {} - sample {} into results table...'.format(result.run_id, i))
                 cur.execute("""
                     INSERT INTO results (run_id, assay_id, sample_role, sample_type, sample_id, result, units,

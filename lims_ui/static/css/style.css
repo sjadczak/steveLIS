@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, SansSerif;
+}
+
+.container {
+    margin: 0 auto;
+    width: 75vw;
+    text-align: center;
+}
+.container h1 p {
+    margin-top: 30px;
+}
+/*.container h3 {*/
+    /*text-align: center;*/
+/*}*/
+
+.container a#home {
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: #3a3a3a;
+    background: buttonface;
+    border: 1px solid #3a3a3a;
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin: 0 auto;
+}
+
+form {
+    text-align: center;
+}
+
+option:nth-child(odd) {
+    background: lightgray;
+}
+
+div.result_container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+div.result_container p {
+    padding: 10px;
+}
+
+div.result_container p:nth-child(odd) {
+    background: lightgray;
+}
