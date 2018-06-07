@@ -17,14 +17,16 @@
             <input type="submit" value="Get run results">
             <br><br>
         </form>
-        <a id="home" href="{{ url_for('index') }}">Clear</a>
+        {% if results %}
+        <div id="homebutton">
+            <a id="home" href="{{ url_for('index') }}">Clear</a>
+        </div>
+        {% endif %}
         <div class="result_container">
             <form action="{{ url_for('download') }}" method="GET">
                 {% if results %}
-                    {% for result in results %}
-                        <p>{{ result }}</p>
-                    {% endfor %}
-                <input type="submit" value="Download results">
+                    {%  include '_results.html' %}
+                    <input id="download" type="submit" value="Download results">
                 {% endif %}
             </form>
         </div>

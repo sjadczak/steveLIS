@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, SansSerif;
+    font-family: Arial, sans-serif;
 }
 
 .container {
@@ -10,11 +10,8 @@ body {
 .container h1 p {
     margin-top: 30px;
 }
-/*.container h3 {*/
-    /*text-align: center;*/
-/*}*/
 
-.container a#home {
+div#homebutton {
     text-decoration: none;
     font-size: 0.9rem;
     color: #3a3a3a;
@@ -22,11 +19,18 @@ body {
     border: 1px solid #3a3a3a;
     border-radius: 3px;
     padding: 1px 6px;
-    margin: 0 auto;
+    margin: 10px auto;
+    width: 35px;
+}
+
+div#homebutton a#home {
+    color: #3a3a3a;
+    text-decoration: none;
 }
 
 form {
     text-align: center;
+    margin-bottom: 0px;
 }
 
 option:nth-child(odd) {
@@ -40,8 +44,35 @@ div.result_container {
 
 div.result_container p {
     padding: 10px;
+    margin: 0 auto;
 }
 
 div.result_container p:nth-child(odd) {
+    background: lightgray;
+}
+
+input#download {
+    margin: 10px auto;
+}
+
+table {
+    text-align: center;
+    border-collapse: collapse;
+}
+
+table th {
+    padding: 3px;
+}
+
+table td {
+    padding: 3px;
+}
+
+table tr:first-child {
+    background: black;
+    color: white;
+}
+
+table tr:nth-child(2n+3) {
     background: lightgray;
 }

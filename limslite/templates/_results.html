@@ -1,0 +1,30 @@
+<table>
+    <!- Result table header ->
+    <tr>
+        <th>Assay</th>
+        <th>Instrument & SW Version</th>
+        <th>Sample Role</th>
+        <th>Sample Type</th>
+        <th>Sample ID</th>
+        <th>Result</th>
+        <th>Units</th>
+        <th>Result Status</th>
+        <th>Operator</th>
+        <th>Flags</th>
+        <th>Control Ct Values</th>
+        <th>Sample Comments</th>
+        <th>Deep Well Plate ID</th>
+        <th>Microwell Plate ID</th>
+        <th>Microwell Plate Position</th>
+        <th>Assay Start Time</th>
+        <th>Assay End Time</th>
+    </tr>
+    {% for result in results %}
+    <!- Row per result in run ->
+    <tr>
+        {% for el in result %}
+            <td>{{ el }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
