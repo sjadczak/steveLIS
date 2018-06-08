@@ -15,7 +15,7 @@ from config import Config
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO,
-                    filename='../logs/steve_lis.log')
+                    filename='../logs/limslite.log')
 
 logger = logging.getLogger('lis_server')
 

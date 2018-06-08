@@ -7,7 +7,7 @@
     <div class="container">
         <h1><p>Welcome to SteveLIS</p></h1>
         <h3>Functional, definitely not pretty</h3>
-        <form action="{{ url_for('fetch_results') }} " method="GET">
+        <form id="fetch" action="{{ url_for('fetch_results') }} " method="GET">
             <select name="run" title="run_selector">
                 {% for run in run_list %}
                     <option value="{{ run[0] }}">{{ run[2] }}</option>
@@ -15,13 +15,11 @@
             </select>
             <br><br>
             <input type="submit" value="Get run results">
-            <br><br>
         </form>
         {% if results %}
-        <div id="homebutton">
-            <a id="home" href="{{ url_for('index') }}">Clear</a>
-        </div>
-        {% endif %}
+        <form id="clearframe" action="{{ url_for('index') }}" method="GET">
+            <input type="submit" value="Clear">
+        </form>
         <div class="result_container">
             <form action="{{ url_for('download') }}" method="GET">
                 {% if results %}
@@ -30,6 +28,7 @@
                 {% endif %}
             </form>
         </div>
+        {% endif %}
     </div>
 </body>
 </html>

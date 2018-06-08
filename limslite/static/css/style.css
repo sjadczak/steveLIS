@@ -11,21 +11,12 @@ body {
     margin-top: 30px;
 }
 
-div#homebutton {
-    text-decoration: none;
-    font-size: 0.9rem;
-    color: #3a3a3a;
-    background: buttonface;
-    border: 1px solid #3a3a3a;
-    border-radius: 3px;
-    padding: 1px 6px;
-    margin: 10px auto;
-    width: 35px;
+form#fetch input {
+    margin-bottom: 10px;
 }
 
-div#homebutton a#home {
-    color: #3a3a3a;
-    text-decoration: none;
+form#clearframe input {
+    margin-bottom: 10px;
 }
 
 form {
@@ -58,6 +49,7 @@ input#download {
 table {
     text-align: center;
     border-collapse: collapse;
+    border: 1px black solid;
 }
 
 table th {
