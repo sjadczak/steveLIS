@@ -1,7 +1,7 @@
 import socketserver
 import logging
 
-from message_etl import C4800
+from msg_etl import C4800
 
 
 logger = logging.getLogger('lis_server.mllpserver')

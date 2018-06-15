@@ -10,7 +10,7 @@ from hl7apy.parser import parse_message
 
 from config import Config
 from database import CursorFromPool
-from message_etl.utils import add_mllp_frame
+from msg_etl.utils import add_mllp_frame
 
 logger = logging.getLogger('lis_server.mllpserver.c4800')
 

@@ -22,6 +22,7 @@ logger = logging.getLogger('lis_server')
 app = Flask(__name__)
 
 
+# kudgey global variables
 runs = []
 runid = None
 results = []
@@ -33,7 +34,7 @@ def index():
     with CursorFromPool() as cur:
         cur.execute("SELECT * FROM runs;")
         runs = [run for run in cur.fetchall()]
-    return render_template('index.html', run_list=runs, results=None)
+    return render_template('index.html', run_list=runs, results=None, runid=None)
 
 
 @app.route('/fetch_results', methods=['GET'])
