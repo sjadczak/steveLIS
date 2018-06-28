@@ -26,10 +26,10 @@ class MLLPHandler(socketserver.BaseRequestHandler):
             c4800msg.save_run_info()
             c4800msg.save_results()
             logger.info('Message from {}:{} processed, saved to database.'.format(*self.client_address))
+            logger.debug('ACK sent: {}'.format(c4800msg.ack('AA')))
             self.request.sendall(c4800msg.ack('AA'))
         else:
             logger.warning('Message from {}:{} - Rejected, incorrect framing.'.format(*self.client_address))
-            print('MSG RECV {}:{} - Rejected, incorrect framing'.format(*self.client_address))
             self.request.sendall(b'msg rejected\nincorrect framing\nclosing connection...\n')
 
 

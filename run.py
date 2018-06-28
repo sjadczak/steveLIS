@@ -10,7 +10,7 @@ if __name__ == '__main__':
     logger.debug('Database connecting...')
     Database.initialize(dsn=Config.DATABASE)
     logger.debug('Database connected...')
-    t1 = threading.Thread(target=MLLPServer(Config.SERVER_ADDR, MLLPHandler).serve_forever, name='mllp', daemon=True)
+    t1 = threading.Thread(target=MLLPServer(Config.MLLP_ADDR, MLLPHandler).serve_forever, name='mllp', daemon=True)
     t2 = threading.Thread(target=app.run, name='lis', daemon=True)
     logger.info('MLLP Server starting...')
     t1.start()

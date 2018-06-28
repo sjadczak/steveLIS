@@ -47,6 +47,7 @@ class C4800:
         resp.msh.msh_9 = 'ACK^R22^ACK'
         resp.msh.msh_10 = self.run_info.msg_guid
         resp.msh.msh_11 = 'P'
+        resp.msh.msh_12 = '2.5.1'
         resp.msh.msh_18 = 'UNICODE UTF-8'
         resp.msh.msh_21 = 'LAB-29^IHE'
         resp.add_segment('MSA')

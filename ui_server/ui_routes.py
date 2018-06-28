@@ -1,11 +1,15 @@
-import os
 import csv
+import os
+import logging
 
 from datetime import datetime
 from flask import render_template, request, send_file
 
-from ui_server import app, logger
+from ui_server import app
 from database import CursorFromPool
+
+
+logger = logging.getLogger('lis_server.ui_server')
 
 
 # wonky global variables
