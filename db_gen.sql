@@ -19,8 +19,7 @@ CREATE TABLE IF NOT EXISTS assays
     CONSTRAINT assays_instrument_id_fkey
     REFERENCES instruments,
   lis_code      VARCHAR(10) NOT NULL,
-  assay_name    VARCHAR(40) NOT NULL,
-  num_channels  INTEGER DEFAULT 1
+  assay_name    VARCHAR(40) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS runs
@@ -68,36 +67,6 @@ CREATE TABLE IF NOT EXISTS results
   CHECK ((((sample_role) :: TEXT = 'P' :: TEXT) AND (cntrl_cts IS NULL)) OR
          (((sample_role) :: TEXT = 'Q' :: TEXT) AND (cntrl_cts IS NOT NULL)))
 );
-
--- missing source code for uuid_nil
-;
-
--- missing source code for uuid_ns_dns
-;
-
--- missing source code for uuid_ns_url
-;
-
--- missing source code for uuid_ns_oid
-;
-
--- missing source code for uuid_ns_x500
-;
-
--- missing source code for uuid_generate_v1
-;
-
--- missing source code for uuid_generate_v1mc
-;
-
--- missing source code for uuid_generate_v3
-;
-
--- missing source code for uuid_generate_v4
-;
-
--- missing source code for uuid_generate_v5
-;
 
 CREATE FUNCTION results_file(runid INTEGER)
   RETURNS TABLE(assay CHARACTER VARYING, instrument_sw CHARACTER VARYING, sample_role CHARACTER VARYING, sample_type CHARACTER VARYING, sample_id CHARACTER VARYING, result CHARACTER VARYING, units CHARACTER VARYING, result_status CHARACTER VARYING, username CHARACTER VARYING, flags TEXT [], cntrl_cts JSONB, comments CHARACTER VARYING, dwp_id CHARACTER VARYING, mwp_id CHARACTER VARYING, mwp_position CHARACTER VARYING, start_ts TIMESTAMP WITHOUT TIME ZONE, end_ts TIMESTAMP WITHOUT TIME ZONE)

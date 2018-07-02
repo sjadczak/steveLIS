@@ -76,8 +76,18 @@ class C4800:
             WHERE model = %s AND sn = %s AND sw_version = %s;
             """, (model, sn, sw_version))
             result = cur.fetchone()
-        self.instrument_info = instrument_info(*result)
-        logger.debug('Message instrument_info: {}'.format(self.instrument_info))
+        if not result:
+            with CursorFromPool() as cur:
+                cur.execute("""
+                INSERT INTO instruments (model, sn, sw_version)
+                VALUES (%s, %s, %s)
+                RETURNING id, model, sn, sw_version;
+                """, (model, sn, sw))
+                update_result = cur.fetchone()
+            self.instrument_info = instrument_info(*update_result)
+        else:
+            self.instrument_info = instrument_info(*result)
+            logger.debug('Message instrument_info: {}'.format(self.instrument_info))
 
     def save_run_info(self):
         logger.info('Getting message run info...')
@@ -96,16 +106,25 @@ class C4800:
     def get_assay_info(self):
         """
         Parses assay from HL7 message and queries assays table for relevant information.
-        :return: namedtuple of assay information (id, instrument_id, list_code, name)
+        :return: namedtuple of assay information (id, instrument_id, lis_code, name)
         """
         logger.debug('Getting sample assay info...')
-        assay = namedtuple('Assay', 'id instrument_id lis_code name num_channels')
+        assay = namedtuple('Assay', 'id instrument_id lis_code assay_name')
         lis_code = self.msg.oul_r22_specimen[0].oul_r22_order[0].obr.obr_4.obr_4_1.value
         with CursorFromPool() as cur:
             cur.execute("""
             SELECT * FROM assays WHERE instrument_id = %s AND lis_code =%s;
             """, (self.instrument_info.id, lis_code))
             result = cur.fetchone()
+        if not result:
+            with CursorFromPool() as cur:
+                cur.execute("""
+                INSERT INTO assays (instrument_id, lis_code, assay_name)
+                VALUES (%s, %s, %s)
+                RETURNING id, instrument_id, lis_code, assay_name;
+                """, (self.instrument_info.id, lis_code, 'temp'))
+                update_result = cur.fetchone()
+            return assay(*update_result)
         return assay(*result)
 
     @staticmethod
@@ -141,7 +160,7 @@ class C4800:
         else:
             sample_type = elem.oul_r22_container[0].inv.inv_1.inv_1_1.value
         sample_id = elem.spm.spm_2.eip_1.ei_1.to_er7()
-        # store raw string, handle parsing actual titer results in UI
+        # TODO implement parsing results (log10 numeric, TND, <LOD
         result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
         units = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_6.obx_6_1.value
         result_status = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_11.value
