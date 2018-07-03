@@ -1,0 +1,4 @@
+assay,instrument_sw,sample_role,sample_type,sample_id,result,units,result_status,"username,",flags,cntrl_cts,comments,dwp_id,mwp_id,mwp_position,start_ts,end_ts
+temp,C4800 cobas 4800 software 2.2.0.1509,Q,HPosCtrl,testsamplebarcode1,2.52E+05 cp/mL,1/mL,F,Laboperator,['M7'],{'Ct:0 (MMx 1)': 25.79},,testdwpid,testmwpid,A01,2015-05-05 09:12:10,2015-05-05 12:13:32
+temp,C4800 cobas 4800 software 2.2.0.1509,Q,LPosCtrl,testsamplebarcode2,3.86E+02 cp/mL,1/mL,F,Laboperator,"['M7', 'T1', 'T3']",{'Ct:0 (MMx 1)': 32.47},,testdwpid,testmwpid,B01,2015-05-05 09:12:10,2015-05-05 12:13:32
+temp,C4800 cobas 4800 software 2.2.0.1509,P,PLAS,testsamplebarcode3,3.14E+04 cp/mL,1/mL,F,Laboperator,,,sample test comments,testdwpid,testmwpid,C01,2015-05-05 09:12:10,2015-05-05 12:13:32

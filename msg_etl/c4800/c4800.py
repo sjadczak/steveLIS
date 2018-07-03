@@ -76,7 +76,7 @@ class C4800:
             WHERE model = %s AND sn = %s AND sw_version = %s;
             """, (model, sn, sw_version))
             result = cur.fetchone()
-        if not result:
+        if result is None:
             with CursorFromPool() as cur:
                 cur.execute("""
                 INSERT INTO instruments (model, sn, sw_version)
@@ -116,7 +116,7 @@ class C4800:
             SELECT * FROM assays WHERE instrument_id = %s AND lis_code =%s;
             """, (self.instrument_info.id, lis_code))
             result = cur.fetchone()
-        if not result:
+        if result is None:
             with CursorFromPool() as cur:
                 cur.execute("""
                 INSERT INTO assays (instrument_id, lis_code, assay_name)
