@@ -3,7 +3,7 @@ import os
 import logging
 
 from datetime import datetime
-from flask import render_template, request, send_file
+from flask import render_template, request, send_file, redirect, url_for
 
 from ui_server import app
 from database import CursorFromPool
@@ -11,11 +11,13 @@ from database import CursorFromPool
 
 logger = logging.getLogger('lis_server.ui_server')
 
+# TODO Make endpoints for updating viewing instruments, updating assay names, etc
 
 # wonky global variables
 runs = []
 runid = None
 results = []
+assays = None
 
 
 @app.route('/')
@@ -61,3 +63,18 @@ def download():
                      mimetype='text/csv',
                      attachment_filename=filename,
                      as_attachment=True)
+
+
+@app.route('/assays', methods=['GET', 'POST'])
+def assay_name():
+    with CursorFromPool() as cur:
+        cur.execute("SELECT * FROM instruments;")
+        instruments = [instrument for instrument in cur.fetchall()]
+    if request.method == "POST":
+        inst_id = request.form['inst_id']
+        with CursorFromPool() as cur:
+            cur.execute("SELECT * FROM assays WHERE instrument_id = %s", (str(inst_id),))
+            assays = [assay for assay in cur.fetchall()]
+        return render_template('assays.html', instruments=instruments, assays=assays)
+
+    return render_template('assays.html', instruments=instruments, assays=None)

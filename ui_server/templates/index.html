@@ -1,39 +1,27 @@
-<html>
-<head>
-    <title>SteveLIS</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <nav>
-        <ul class="nav">
-            <li class="nav-element-home"><a href="{{ url_for('index') }}">SteveLIS</a></li>
-        </ul>
-    </nav>
-    <div class="container">
-        <h1>Welcome</h1>
-        <h3>Functional, definitely not pretty</h3>
-        <form id="fetch" action="{{ url_for('fetch_results') }} " method="GET">
-            <select name="run" title="run_selector">
-                {% for run in run_list %}
-                    <option value="{{ run[0] }}">{{ run[2] }}</option>
-                {% endfor %}
-            </select>
-            <br><br>
-            <input type="submit" value="Get run results">
+{% extends "base.html" %}
+{% block content %}
+    <h1>Welcome</h1>
+    <h3>Functional, definitely not pretty</h3>
+    <form id="fetch" action="{{ url_for('fetch_results') }} " method="GET">
+        <select name="run" title="run_selector">
+            {% for run in run_list %}
+                <option value="{{ run[0] }}">{{ run[2] }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input type="submit" value="Get run results">
+    </form>
+    {% if results %}
+    <form id="clearframe" action="{{ url_for('index') }}" method="GET">
+        <input type="submit" value="Clear">
+    </form>
+    <div class="result_container">
+        <form action="{{ url_for('download') }}" method="GET">
+            {% if results %}
+                {%  include '_results.html' %}
+                <input id="download" type="submit" value="Download results">
+            {% endif %}
         </form>
-        {% if results %}
-        <form id="clearframe" action="{{ url_for('index') }}" method="GET">
-            <input type="submit" value="Clear">
-        </form>
-        <div class="result_container">
-            <form action="{{ url_for('download') }}" method="GET">
-                {% if results %}
-                    {%  include '_results.html' %}
-                    <input id="download" type="submit" value="Download results">
-                {% endif %}
-            </form>
-        </div>
-        {% endif %}
     </div>
-</body>
-</html>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Testing - Coming Soon!</h1>
+    <form id="instruments" action="{{ url_for("assay_name") }}" method="POST">
+        <label>Choose an instrument: </label>
+        <select title="inst_id" name="inst_id">
+            {% for instrument in instruments %}
+                <option value="{{ instrument[0] }}">{{ instrument[1] }}</option>
+                <input type="submit" value="Find assays">
+            {% endfor %}
+        </select>
+    </form>
+    {% if assays %}
+        <ul>
+        {% for assay in assays %}
+            <li>{{ assay[-1] }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

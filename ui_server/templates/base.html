@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>SteveLIS</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul class="nav">
+            <li class="nav-element-home"><a href="{{ url_for('index') }}">SteveLIS</a></li>
+            <li class="nav-element"><a href="{{ url_for('assay_name') }}">Add assay name</a></li>
+        </ul>
+    </nav>
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+</body>
+</html>

@@ -36,9 +36,10 @@ class C4800:
         :rtype: HL7apy.core.Message
         :return: ACK ('AA') or NAK ('AE', 'AR') message
         """
-        resp_types = ('AA', 'AR', 'AE')
-        if resp_type not in resp_types:
-            raise ValueError("Invalid ACK type. Expected one of: {}".format(resp_types))
+        _resp_types = ('AA', 'AR', 'AE')
+
+        if resp_type not in _resp_types:
+            raise ValueError("Invalid ACK type. Expected one of: {}".format(_resp_types))
         resp = Message('ACK', version='2.5.1')
         resp.msh.msh_3 = 'LIS'
         resp.msh.msh_4 = 'LIS Facility'
@@ -143,6 +144,16 @@ class C4800:
             result[channel] = float(ct)
         return json.dumps(result)
 
+    # TODO make more robust
+    @staticmethod
+    def parse_result(raw):
+        if raw[0] == '<':
+            return "<20"
+        elif raw[4] != 'E':
+            return raw
+        else:
+            return raw[:-6]
+
     def _parse_result(self, elem):
         """
         Parses individual result information from a OUL_R22_SPECIMEN Group. One group will be present for all
@@ -160,8 +171,8 @@ class C4800:
         else:
             sample_type = elem.oul_r22_container[0].inv.inv_1.inv_1_1.value
         sample_id = elem.spm.spm_2.eip_1.ei_1.to_er7()
-        # TODO implement parsing results (log10 numeric, TND, <LOD
-        result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
+        raw_result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
+        result = self.parse_result(raw_result)
         units = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_6.obx_6_1.value
         result_status = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_11.value
         username = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_16.value
@@ -173,7 +184,7 @@ class C4800:
             flags = flags_raw
         if sample_role == 'Q':
             cts_raw = elem.oul_r22_order[1].nte[1].nte_3.value
-            cntrl_cts = C4800.parse_cntrl_ct(cts_raw)
+            cntrl_cts = self.parse_cntrl_ct(cts_raw)
         else:
             cntrl_cts = None
         if sample_role == 'P':
