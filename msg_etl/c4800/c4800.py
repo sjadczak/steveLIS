@@ -76,7 +76,7 @@ class C4800:
             WHERE model = %s AND sn = %s AND sw_version = %s;
             """, (model, sn, sw_version))
             result = cur.fetchone()
-        if not result:
+        if result is None:
             with CursorFromPool() as cur:
                 cur.execute("""
                 INSERT INTO instruments (model, sn, sw_version)
@@ -116,7 +116,7 @@ class C4800:
             SELECT * FROM assays WHERE instrument_id = %s AND lis_code =%s;
             """, (self.instrument_info.id, lis_code))
             result = cur.fetchone()
-        if not result:
+        if result is None:
             with CursorFromPool() as cur:
                 cur.execute("""
                 INSERT INTO assays (instrument_id, lis_code, assay_name)
@@ -168,18 +168,18 @@ class C4800:
         flags_raw = elem.oul_r22_order[1].nte.nte_3.value
         flags_raw = flags_raw[2:].split(',')
         if flags_raw[0] == 'NONE' and len(flags_raw) == 1:
-            flags = None
+            flags = ''
         else:
             flags = flags_raw
         if sample_role == 'Q':
             cts_raw = elem.oul_r22_order[1].nte[1].nte_3.value
             cntrl_cts = C4800.parse_cntrl_ct(cts_raw)
         else:
-            cntrl_cts = None
+            cntrl_cts = ''
         if sample_role == 'P':
             comments = elem.oul_r22_order[1].nte[2].nte_3.value
         else:
-            comments = None
+            comments = ''
         dwp_id = elem.oul_r22_container[2].inv.inv_5.inv_5_1.value
         mwp_id = elem.oul_r22_container[1].inv.inv_5.inv_5_1.value
         mwp_position = elem.oul_r22_container[1].inv.inv_6.inv_6_1.value

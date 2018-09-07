@@ -1,7 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
 
-HOST, PORT = 'localhost', 9999
+HOST, PORT = 'localhost', 2575
 
 SB = b'\x0B'
 EB = b'\x1C\r'
