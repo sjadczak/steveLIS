@@ -168,18 +168,18 @@ class C4800:
         flags_raw = elem.oul_r22_order[1].nte.nte_3.value
         flags_raw = flags_raw[2:].split(',')
         if flags_raw[0] == 'NONE' and len(flags_raw) == 1:
-            flags = None
+            flags = ''
         else:
             flags = flags_raw
         if sample_role == 'Q':
             cts_raw = elem.oul_r22_order[1].nte[1].nte_3.value
             cntrl_cts = C4800.parse_cntrl_ct(cts_raw)
         else:
-            cntrl_cts = None
+            cntrl_cts = ''
         if sample_role == 'P':
             comments = elem.oul_r22_order[1].nte[2].nte_3.value
         else:
-            comments = None
+            comments = ''
         dwp_id = elem.oul_r22_container[2].inv.inv_5.inv_5_1.value
         mwp_id = elem.oul_r22_container[1].inv.inv_5.inv_5_1.value
         mwp_position = elem.oul_r22_container[1].inv.inv_6.inv_6_1.value
