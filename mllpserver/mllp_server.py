@@ -48,8 +48,6 @@ class MLLPHandler(socketserver.BaseRequestHandler):
                                                                                        msg_len/chunk_count,
                                                                                        recv_end))
         msg_str = msg_bytes.decode().replace('\n', '\r')
-        with open('/home/admin/Desktop/msg.txt', 'w') as f:
-            f.write(msg_str)
         if all([msg_str[0] == SB_str, msg_str[-2:] == EB_str]):
             process_start = time()
             c4800msg = C4800(msg_str[1:-2])
