@@ -82,7 +82,7 @@ class C4800:
                 INSERT INTO instruments (model, sn, sw_version)
                 VALUES (%s, %s, %s)
                 RETURNING id, model, sn, sw_version;
-                """, (model, sn, sw))
+                """, (model, sn, sw_version))
                 update_result = cur.fetchone()
             self.instrument_info = instrument_info(*update_result)
         else:
@@ -142,6 +142,12 @@ class C4800:
             channel, ct = x.split(',')
             result[channel] = float(ct)
         return json.dumps(result)
+    
+    @staticmethod
+    def process_result(x):
+        if x[-5:].lower() == 'cp/ml':
+            return x[:8]
+        return x
 
     def _parse_result(self, elem):
         """
@@ -161,21 +167,22 @@ class C4800:
             sample_type = elem.oul_r22_container[0].inv.inv_1.inv_1_1.value
         sample_id = elem.spm.spm_2.eip_1.ei_1.to_er7()
         # TODO implement parsing results (log10 numeric, TND, <LOD
-        result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
+        raw_result = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_5.value
+        result = self.process_result(raw_result)
         units = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_6.obx_6_1.value
         result_status = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_11.value
         username = elem.oul_r22_order[0].oul_r22_obxtcdsidnte_suppgrp[1].obx.obx_16.value
         flags_raw = elem.oul_r22_order[1].nte.nte_3.value
         flags_raw = flags_raw[2:].split(',')
         if flags_raw[0] == 'NONE' and len(flags_raw) == 1:
-            flags = ''
+            flags = [""]
         else:
             flags = flags_raw
-        if sample_role == 'Q':
+        if sample_role == 'Q' and sample_type != 'NEGCONTROL':
             cts_raw = elem.oul_r22_order[1].nte[1].nte_3.value
             cntrl_cts = C4800.parse_cntrl_ct(cts_raw)
         else:
-            cntrl_cts = ''
+            cntrl_cts = json.dumps({"":""})
         if sample_role == 'P':
             comments = elem.oul_r22_order[1].nte[2].nte_3.value
         else:
