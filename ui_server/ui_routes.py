@@ -2,7 +2,6 @@ import csv
 import os
 import logging
 
-from datetime import datetime
 from flask import render_template, request, send_file
 
 from ui_server import app
@@ -45,9 +44,8 @@ def download():
     path = 'downloads/'
     if not os.path.isdir(path):
         os.makedirs(path)
-    time = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
     logger.debug('Opening file to write results to...')
-    filename = '{}_run-{}-results.csv'.format(time, runid)
+    filename = 'run-{}-results.csv'.format(runid)
     with open(path+filename, 'w', newline='') as f:
         writer = csv.writer(f, delimiter=',')
         writer.writerow(('assay', 'instrument_sw', 'sample_role', 'sample_type', 'sample_id', 'result', 'units',
