@@ -1,5 +1,6 @@
 downloads/
 venv/
 logs/
+.idea/
 */__pycache__/
 *.pyc

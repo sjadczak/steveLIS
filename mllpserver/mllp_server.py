@@ -4,7 +4,7 @@ import logging
 from time import time
 
 from msg_etl import C4800
-from msg_etl.utils import SB, EB, SB_str, EB_str
+from msg_etl.utils import EB, SB_str, EB_str
 
 
 logger = logging.getLogger('lis_server.mllpserver')
